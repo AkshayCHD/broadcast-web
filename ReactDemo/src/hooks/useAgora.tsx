@@ -10,6 +10,7 @@ export default function useAgora(client: IAgoraRTCClient | undefined)
       joinState: boolean,
       leave: Function,
       join: Function,
+      joinAsAudience: Function,
       remoteUsers: IAgoraRTCRemoteUser[],
     }
     {
@@ -29,14 +30,30 @@ export default function useAgora(client: IAgoraRTCClient | undefined)
   }
 
   async function join(appid: string, channel: string, token?: string, uid?: string | number | null) {
+    console.log({ appid, channel, token, uid })
     if (!client) return;
     const [microphoneTrack, cameraTrack] = await createLocalTracks();
     
-    await client.join(appid, channel, token || null);
+    await client.setClientRole("host");
+    await client.join(appid, channel, token || null, uid);
     await client.publish([microphoneTrack, cameraTrack]);
 
     (window as any).client = client;
     (window as any).videoTrack = cameraTrack;
+
+    setJoinState(true);
+  }
+  
+  async function joinAsAudience(appid: string, channel: string, token?: string, uid?: string | number | null) {
+    if (!client) return;
+    // const [microphoneTrack, cameraTrack] = await createLocalTracks();
+    
+    await client.join(appid, channel, token || null, uid);
+    // await client.publish([microphoneTrack, cameraTrack]);
+
+    (window as any).client = client;
+    // if(cameraTrack)
+      // (window as any).videoTrack = cameraTrack;
 
     setJoinState(true);
   }
@@ -56,6 +73,8 @@ export default function useAgora(client: IAgoraRTCClient | undefined)
   }
 
   useEffect(() => {
+    console.log("%c use effect run", "color: green")
+    console.log({ client })
     if (!client) return;
     setRemoteUsers(client.remoteUsers);
 
@@ -79,6 +98,8 @@ export default function useAgora(client: IAgoraRTCClient | undefined)
     client.on('user-left', handleUserLeft);
 
     return () => {
+      console.log("%c use effect run", "color: red")
+      console.log({ client })
       client.off('user-published', handleUserPublished);
       client.off('user-unpublished', handleUserUnpublished);
       client.off('user-joined', handleUserJoined);
@@ -92,6 +113,7 @@ export default function useAgora(client: IAgoraRTCClient | undefined)
     joinState,
     leave,
     join,
+    joinAsAudience,
     remoteUsers,
   };
 }
