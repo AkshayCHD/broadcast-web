@@ -1,11 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import Call from './Call';
+import App from './App';
+import {
+  BrowserRouter as Router,
+} from "react-router-dom";
 
 ReactDOM.render(
   <React.StrictMode>
-    <Call />
+    <Router>
+      <App />
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );
